@@ -24,9 +24,12 @@ class Building {
 
   _fetchNearestElevator(atFloor, toFloor) {
     var availableElevators
-    availableElevators = this._elevatorsAtFloor()
+    availableElevators = this._elevatorsAtFloor(atFloor)
     if (availableElevators.length > 0) { return availableElevators[0] }
-
+    availableElevators = this._elevatorMovingPastFloor(atFloor)
+    if (availableElevators.length > 0) { return availableElevators[0] }
+    availableElevators = this._closestStoppedElevator(floor)
+    if (availableElevators.length > 0) { return availableElevators[0] }
   }
 
   _elevatorsAtFloor(floor) {
@@ -35,7 +38,20 @@ class Building {
 
   _elevatorMovingPastFloor(floor) {
     return this.elevators.filter(elevator => {
-      return floor
+      if (elevator.state !== 'moving') { return false }
+      if (elevator.direction === 'up' && floor <= elevator.destinationFloor) { return true }
+      if (elevator.direction === 'down' && floor >= elevator.destinationFloor) { return true }
+      return false
     })
+  }
+
+  _closestStoppedElevator(floor) {
+    var elevatorsStoppedAtFloors = this.elevators.filter(elevator => elevator.state === 'stopped')
+    var floorWithClosestElevator = this._closestNumber(floor, elevatorsStoppedAtFloors.map(elevator => elevator.currentFloor))
+    return elevatorsStoppedAtFloors.filter(elevator => elevator.currentFloor === floorWithClosestElevator)
+  }
+
+  _closestNumber(number, array) {
+    return counts.reduce((prev, curr) => Math.abs(curr - number) < Math.abs(prev - number) ? curr : prev)
   }
 }
