@@ -6,13 +6,13 @@ class ElevatorRequest {
     this.elevators = elevators
   }
 
-  fetchNearestElevator(atFloor, toFloor) {
+  fetchNearestElevator() {
     var availableElevators
-    availableElevators = this._elevatorsAtFloor(atFloor)
+    availableElevators = this._elevatorsAtFloor()
     if (availableElevators.length > 0) { return availableElevators[0] }
-    availableElevators = this._elevatorMovingPastFloor(atFloor)
+    availableElevators = this._elevatorMovingPastFloor()
     if (availableElevators.length > 0) { return availableElevators[0] }
-    availableElevators = this._closestStoppedElevator(floor)
+    availableElevators = this._closestStoppedElevator()
     if (availableElevators.length > 0) { return availableElevators[0] }
     return
   }
