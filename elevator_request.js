@@ -7,22 +7,23 @@ class ElevatorRequest {
   }
 
   fetchNearestElevator() {
-    var availableElevators
-    availableElevators = this._elevatorsAtFloor()
-    if (availableElevators.length > 0) { return availableElevators[0] }
-    availableElevators = this._elevatorMovingPastFloor()
-    if (availableElevators.length > 0) { return availableElevators[0] }
-    availableElevators = this._closestStoppedElevator()
-    if (availableElevators.length > 0) { return availableElevators[0] }
+    var elevators
+    this.availableElevators = this.elevators.filter(elevator => elevator.state !== 'maintance')
+    elevators = this._elevatorsAtFloor()
+    if (elevators.length > 0) { return elevators[0] }
+    elevators = this._elevatorMovingPastFloor()
+    if (elevators.length > 0) { return elevators[0] }
+    elevators = this._closestStoppedElevator()
+    if (elevators.length > 0) { return elevators[0] }
     return
   }
 
   _elevatorsAtFloor() {
-    return this.elevators.filter(elevator => this.floor === elevator.currentFloor)
+    return this.availableElevators.filter(elevator => this.floor === elevator.currentFloor)
   }
 
   _elevatorMovingPastFloor() {
-    return this.elevators.filter(elevator => {
+    return this.availableElevators.filter(elevator => {
       if (elevator.state !== 'moving') { return false }
       if (elevator.direction === 'up' && this.floor <= elevator.destinationFloor) { return true }
       if (elevator.direction === 'down' && this.floor >= elevator.destinationFloor) { return true }
@@ -31,7 +32,7 @@ class ElevatorRequest {
   }
 
   _closestStoppedElevator() {
-    var elevatorsStoppedAtFloors = this.elevators.filter(elevator => elevator.state === 'stopped')
+    var elevatorsStoppedAtFloors = this.availableElevators.filter(elevator => elevator.state === 'stopped')
     var floorWithClosestElevator = this._closestNumber(this.floor, elevatorsStoppedAtFloors.map(elevator => elevator.currentFloor))
     return elevatorsStoppedAtFloors.filter(elevator => elevator.currentFloor === floorWithClosestElevator)
   }

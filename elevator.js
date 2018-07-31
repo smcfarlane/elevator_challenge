@@ -52,7 +52,7 @@ class Elevator {
   }
 
   _resumeOpperation(nextFloor) {
-    if (!nextFloor && this.nextDestinations.length === 0) {
+    if (!nextFloor && !this.destinationFloor && this.nextDestinations.length === 0) {
       this.state = 'stopped'
     } if else (this.destinationFloor) {
       this.move(this.destinationFloor)
@@ -96,6 +96,8 @@ class Elevator {
       if (this.destinationFloor > this.currentFloor) {
         this.state = 'stopped'
         this.direction = undefined
+        this.trips += 1
+        this._checkForMaintainance()
         return
       }
     }
@@ -109,8 +111,16 @@ class Elevator {
       if (this.destinationFloor < this.currentFloor) {
         this.state = 'stopped'
         this.direction = undefined
+        this.trips += 1
+        this._checkForMaintainance()
         return
       }
     }
+  }
+
+  _checkForMaintainance() {
+    if (this.trips > 100) {
+      this.state = 'maintance'
+    })
   }
 }
