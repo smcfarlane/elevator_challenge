@@ -10,10 +10,11 @@ class RequestManager {
     this.requestedFloors.push({ floor: floor, callback: callback })
   }
 
-  hasReachedRequestedFloor() {
+  checkHasReachedRequestedFloor() {
     var result = false
     this.requestedFloors.forEach((request, index, arr) => {
       if (request.floor === this.elevator.currentFloor) {
+        this.elevator.stopForPassengers(request.floor)
         cb()
         result = true
         arr.splice(index, 1)

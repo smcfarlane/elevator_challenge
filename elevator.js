@@ -1,18 +1,19 @@
 import RequestManager from './request_manager'
 
 const states = ['stopped', 'moving', 'maintance']
-const doorStates = ['doors-open', 'doors-closed']
+const doorStates = ['open', 'closed']
 
 var elevatorNumber = 1
 
 class Elevator {
   constructor(maxFloors) {
     this.state = 'stopped'
-    this.doorStates = 'doors-closed'
+    this.doorState = 'doors-closed'
     this.trips = 0
     this.maxFloors = maxFloors
     this.currentFloor = 1
     this.destinationFloor = undefined
+    this.nextDestinations = []
     this.number = elevatorNumber
     this.occupied = false
     this.direction = undefined
@@ -20,9 +21,26 @@ class Elevator {
     elevatorNumber += 1
   }
 
-  moveTo(floorNumber) {
+
+
+  request(floor, cb) {
+    this.requestManager.addFloorRequest(floor, cb)
+    if (self.state === 'stopped') {
+      this.move(floor)
+    }
+  }
+
+  async stopForPassengers(nextFloor) {
+    this.state = 'stopped'
+    this._openDoors()
+    await sleep(2000)
+    this._closeDoors()
+    this.resumeOperation(nextFloor)
+  }
+
+    move(nextFloor) {
     this.state = 'moving'
-    this.destinationFloor = floorNumber
+    this.destinationFloor = nextFloor
     if (this.destinationFloor === this.currentFloor) {
       this.state = 'stopped'
       return this
@@ -33,16 +51,32 @@ class Elevator {
     }
   }
 
-  request(floor, cb) {
-    this.requestManager.addFloorRequest(floor, cb)
+  _resumeOpperation(nextFloor) {
+    if (!nextFloor && this.nextDestinations.length === 0) {
+      this.state = 'stopped'
+    } if else (this.destinationFloor) {
+      this.move(this.destinationFloor)
+    } if else (!nextFloor && this.nextDestinations.length !== 0) {
+      this.nextDestinations.shift()
+      this.move(this.nextDestinations.shift())
+    } if else (!this.destinationFloor) {
+      this.move(nextFloor)
+    } else {
+      this.nextDestinations.push(nextFloor)
+    }
   }
 
-  async stopForPassengers() {
-    this.state = 'stopped'
-    await sleep(2000)
+  _openDoors() {
+    this.doorState = 'open'
+    console.log(`Elevator Number ${this.number} has opened its doors.`)
   }
 
-  async _moveOneFloor {
+  _closeDoors() {
+    this.doorState = 'close'
+    console.log(`Elevator Number ${this.number} has closed its doors.`)
+  }
+
+  async _moveOneFloor() {
     if (this.state === 'stopped') { return }
     await sleep(2000)
     if (this.direction === 'up') {
@@ -50,6 +84,7 @@ class Elevator {
     } else if (this.direction == 'down') {
       this.currentFloor -= 1
     }
+    this.requestManager.checkHasReachedRequestedFloor()
     console.log(`Elevator Number ${this.number} is now at floor ${this.currentFloor}.`)
   }
 
@@ -57,10 +92,11 @@ class Elevator {
     this.direction = 'up'
     this.state = 'moving'
     while (this.destinationFloor > this.currentFloor) {
-      await this._moveOneFloorUp()
+      await this._moveOneFloor()
       if (this.destinationFloor > this.currentFloor) {
         this.state = 'stopped'
         this.direction = undefined
+        return
       }
     }
   }
@@ -69,10 +105,11 @@ class Elevator {
     this.direction = 'down'
     this.state = 'moving'
     while(this.destinationFloor < this.currentFloor) {
-      await this._moveOneFloorDown()
+      await this._moveOneFloor()
       if (this.destinationFloor < this.currentFloor) {
         this.state = 'stopped'
         this.direction = undefined
+        return
       }
     }
   }
