@@ -21,4 +21,21 @@ class Building {
     }
     var elevator = this._fetchNearestElevator(atFloor, toFloor)
   }
+
+  _fetchNearestElevator(atFloor, toFloor) {
+    var availableElevators
+    availableElevators = this._elevatorsAtFloor()
+    if (availableElevators.length > 0) { return availableElevators[0] }
+
+  }
+
+  _elevatorsAtFloor(floor) {
+    return this.elevators.filter(elevator => floor === elevator.currentFloor)
+  }
+
+  _elevatorMovingPastFloor(floor) {
+    return this.elevators.filter(elevator => {
+      return floor
+    })
+  }
 }
